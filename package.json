@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "webpack-dev-server --inline --hot",
     "prebuild": "rimraf dist",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "repository": {
     "type": "git",
