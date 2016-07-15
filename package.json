@@ -1,12 +1,11 @@
 {
   "name": "vue-dataform-mixin",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Vue Mixin util for building data input form",
   "main": "src/DataFormMixin.vue",
   "author": "Rati Wannapanop <rati.wannapanop@gmail.com>",
   "scripts": {
     "dev": "webpack-dev-server --inline --hot",
-    "prebuild": "rimraf dist",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "repository": {
