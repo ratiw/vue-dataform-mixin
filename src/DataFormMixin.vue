@@ -25,7 +25,7 @@ export default {
     },
     data: function () {
         return {
-            version: '0.6',
+            version: '0.7',
             eventPrefix: 'dataform:',
             input: null,
             errors: null,
@@ -131,7 +131,25 @@ export default {
         },
         clearErrors: function() {
             this.errors = null
-        }
+        },
+        numericInputFilter: function(value, event) {
+            var valid = true
+            // check valid characters first
+            if ('0123456789.-'.indexOf(event.key) < 0) {
+                valid = false
+            }
+            // do not allow decimal if it's already exist
+            if (event.key === '.' && value.indexOf('.') >= 0) {
+                valid = false
+            }
+            if (event.key === '-' && value.trim() !== '') {
+                valid = false
+            }
+
+            if (!valid) {
+                event.preventDefault()
+            }
+        },
     },
     events: {
         'dataform:set-data': function (data) {
