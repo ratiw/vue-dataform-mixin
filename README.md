@@ -1,4 +1,8 @@
 # vue-dataform-mixin
+[![Travis build](https://img.shields.io/travis/ratiw/vue-dataform-mixin.svg)](https://travis-ci.org/ratiw/vue-dataform-mixin)
+[![Coverage Status](https://coveralls.io/repos/github/ratiw/vue-dataform-mixin/badge.svg?branch=master)](https://coveralls.io/github/ratiw/vue-dataform-mixin?branch=master)
+[![npm](https://img.shields.io/npm/l/vue-dataform-mixin.svg)]()
+[![npm version](https://img.shields.io/npm/v/vue-dataform-mixin.svg)](https://www.npmjs.com/package/vue-dataform-mixin)
 
 > Vue Mixin util to help create data entry component
 
