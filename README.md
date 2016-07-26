@@ -1,6 +1,6 @@
 # vue-dataform-mixin
 
-> Vue Mixin util for building data input form
+> Vue Mixin util to help create data entry component
 
 ## Installation
 
