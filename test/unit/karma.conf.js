@@ -48,19 +48,28 @@ webpackConfig.module.loaders.some(function (loader, i) {
 })
 
 module.exports = function (config) {
-  config.set({
-    client: {
-      chai: {
-        truncateThreshold: 0
-      }
-    },
+  var configuration = {
     // to run in additional browsers:
     // 1. install corresponding karma launcher
     //    http://karma-runner.github.io/0.13/config/browsers.html
     // 2. add it to the `browsers` array below.
     // browsers: ['PhantomJS'],
     browsers: ['Chrome'],
+
+    customLaunchers: {
+      Chrome_travis_ci: {
+        base: 'Chrome',
+        flags: ['--no-sandbox']
+      }
+    },
+
     frameworks: ['mocha', 'sinon-chai'],
+    // chai config
+    client: {
+      chai: {
+        truncateThreshold: 0
+      }
+    },
     reporters: ['spec', 'coverage'],
     files: ['./index.js'],
     preprocessors: {
@@ -77,5 +86,16 @@ module.exports = function (config) {
         { type: 'text-summary' }
       ]
     }
-  })
+  }
+
+  if (process.env.TRAVIS) {
+    configuration.browsers = ['Chrome_travis_ci'];
+    // configuration.reporters = configuration.reporters.concat(['coverage', 'coveralls']);
+    // configuration.coverageReporter = {
+    //   type : 'lcovonly',
+    //   dir : 'coverage/'
+    // };
+  }
+
+  config.set(configuration)
 }
