@@ -34,93 +34,139 @@ $ npm install vue-dataform-mixin
 
 - __Usage:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. At necessitatibus accusamus labore quisquam amet iure esse ullam expedita, quia voluptatum, debitis culpa eaque reprehenderit velit natus quas iusto repudiandae adipisci!
+    Array of property names to be mapped to `input` object inside the data form.
 
 #### # data
 - __Expect:__ `Object`
 
+- __Default:__ `{}`
+
 - __Usage:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quidem assumenda at, excepturi, dicta voluptatem fugiat quaerat cum molestiae iure consequuntur modi. Quod numquam magnam accusamus autem hic neque voluptate. Laboriosam.
+    The data which its value will be used to populate in the data form. This data will not be modified until the changes have been committed (saved) by the user.
 
 #### # validate-callback
 - __Expect:__ `String`
 
+- __Default:__ `''`
+
 - __Usage:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aspernatur tempore quisquam excepturi cum sint impedit, maxime hic. Et modi nemo eos dolorem nisi tenetur animi impedit consectetur, veniam nam ducimus.
+    Name of the callback to be called for the data validation. If no callback is defined, the validation will always return `true` (which is considered as passed)
 
-### # delete-button
+#### # delete-button
 - __Expect:__ `Boolean`
 
+- __Default:__ `false`
+
 - __Usage:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempora eligendi nemo labore provident, ducimus, minus aliquid dolores laborum officia pariatur quibusdam distinctio natus! Distinctio explicabo veritatis culpa aut odit! Officia.
+    Whether to display the `delete` button or not?
+
+    > __Note:__ You need to make sure that the delete button will be conditionally displayed in your template and the its click event is bound to `onDelete()` method.
 
 ## Internal Data
 #### # input
+- __Default:__ `null`
+
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus harum modi atque! Id velit dolores numquam aliquid vitae explicabo totam iure, laudantium debitis facere saepe non, neque et. Odit, similique!
+    This is where the values in the `data` prop will be copied to and used inside data form.
+
+    > __Note:__ Only the values of property given in the `keys` prop will be copied, the rests are ignored.
 
 #### # errors
+- __Default:__ `null`
+
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus harum modi atque! Id velit dolores numquam aliquid vitae explicabo totam iure, laudantium debitis facere saepe non, neque et. Odit, similique!
+    If it is not `null`, it will contain all the validation errors of the fileds not passing validation.
+
+    > __Note:__ Normally, this property can be set via `dataform:set-errors` event, which will internally call `setErrors()` method.
 
 #### # isNew
+- __Default:__ `false`
+
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus harum modi atque! Id velit dolores numquam aliquid vitae explicabo totam iure, laudantium debitis facere saepe non, neque et. Odit, similique!
+    Its value will be automatically set by `setData()` method. If the pass-in data is null, it will be set to `true` to indicate a new data. Otherwise, its value will be set to `false`.
 
 #### # eventPrefix
+- __Default:__ `dataform:`
+
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus harum modi atque! Id velit dolores numquam aliquid vitae explicabo totam iure, laudantium debitis facere saepe non, neque et. Odit, similique!
+    The prefix string that should be applied to all event emitted by the data form.
 
 ## Event trigger methods
+In order for the data form to work, you will need to correctly bind these methods to the corresponding buttons.
+
 #### # onSave
 - __Usage:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempore in quae, minus sapiente. Totam, corrupti quae pariatur. Suscipit totam sunt mollitia earum quam ipsum eum cum, placeat, aspernatur nemo exercitationem!
+    ```javascript
+      <template>
+        ...
+        <button @click="onSave">Save</button>
+        ...
+      </template>
+    ```
 
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Numquam officia omnis minima, odio aperiam vel, sed? Harum nisi, neque aspernatur illum, porro voluptate possimus numquam ullam ipsum deserunt, cum sint.
+    When triggered, it will do the following, in order:
+    - Check if the data in the form has been modified (e.g. different from the original values). If not, the `dataform:no-changed` event will be dispatched and exit.
+    - Call the validation callback (if defined). If the validation fails, then exit.
+    - Copy all the changes from `input` to `data`
+    - Dispatch the `dataform:stored` or `dataform:updated` event depending on the valid of `isNew`.
 
 #### # onCancel
 - __Usage:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempore in quae, minus sapiente. Totam, corrupti quae pariatur. Suscipit totam sunt mollitia earum quam ipsum eum cum, placeat, aspernatur nemo exercitationem!
+    ```javascript
+      <template>
+        ...
+        <button @click="onCancel">Cancel</button>
+        ...
+      </template>
+    ```
 
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Numquam officia omnis minima, odio aperiam vel, sed? Harum nisi, neque aspernatur illum, porro voluptate possimus numquam ullam ipsum deserunt, cum sint.
+    When triggered, it will dispatch the `dataform:cancelled` event, then exit.
 
 #### # onDelete
 - __Usage:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempore in quae, minus sapiente. Totam, corrupti quae pariatur. Suscipit totam sunt mollitia earum quam ipsum eum cum, placeat, aspernatur nemo exercitationem!
+    ```javascript
+      <template>
+        ...
+        <button @click="onDelete">Delete</button>
+        ...
+      </template>
+    ```
 
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Numquam officia omnis minima, odio aperiam vel, sed? Harum nisi, neque aspernatur illum, porro voluptate possimus numquam ullam ipsum deserunt, cum sint.
+    When triggered, it will dispatch the `dataform:request-delete` event, then exit.
 
 
 ## Data related methods
-#### # isNew
-- __Returns:__ `boolean`
+#### # setData
+- __Argument:__ `{Object} data`
 
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempore in quae, minus sapiente. Totam, corrupti quae pariatur. Suscipit totam sunt mollitia earum quam ipsum eum cum, placeat, aspernatur nemo exercitationem!
+    This method will copy the values of the provided `keys` prop in the given `data` to the `input` object. It will also set the value of `isNew` property depending on the content of the given argument.
+
+    > __Note:__ This method is called when `dataform:set-data` event was received. You should use `dataform:set-data` event when possible.
 
 #### # isDirty
 - __Returns:__ `boolean`
 
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempore in quae, minus sapiente. Totam, corrupti quae pariatur. Suscipit totam sunt mollitia earum quam ipsum eum cum, placeat, aspernatur nemo exercitationem!
+    Return `true` if the data in the data form has been modified to be different than the original value. Otherwise, return `false`.
 
 #### # hasError
 - __Argument:__ `{String} name (optional)`
@@ -129,7 +175,9 @@ $ npm install vue-dataform-mixin
 
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempore in quae, minus sapiente. Totam, corrupti quae pariatur. Suscipit totam sunt mollitia earum quam ipsum eum cum, placeat, aspernatur nemo exercitationem!
+    Check if there is any error from validation when called without an argument.
+
+    Or, check if there is any error for the given field.
 
 #### # getError
 - __Argument:__ `{String} name`
@@ -138,24 +186,26 @@ $ npm install vue-dataform-mixin
 
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempore in quae, minus sapiente. Totam, corrupti quae pariatur. Suscipit totam sunt mollitia earum quam ipsum eum cum, placeat, aspernatur nemo exercitationem!
+    Get the array of validation error message(s) for the given field.
 
 #### # setErrors
 - __Argument:__ `{Array} errors`
 
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti quae, delectus aperiam. Fugiat repudiandae perspiciatis corporis neque alias rem, aut provident blanditiis inventore suscipit magnam harum non saepe animi. At.
+    Set the internal `errors` property to the given object.
+
+    > __Note:__ This method is called when `dataform:set-errors` event was received. You should use `dataform:set-errors` event when possible.
 
 #### # clearErrors
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti quae, delectus aperiam. Fugiat repudiandae perspiciatis corporis neque alias rem, aut provident blanditiis inventore suscipit magnam harum non saepe animi. At.
+    Set the internal `errors` property to `null`.
 
 #### # clearForm
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti quae, delectus aperiam. Fugiat repudiandae perspiciatis corporis neque alias rem, aut provident blanditiis inventore suscipit magnam harum non saepe animi. At.
+    Set all input inside data form to empty string `''`.
 
 
 ## Input keypress filtering
@@ -165,38 +215,53 @@ $ npm install vue-dataform-mixin
     - `{KeyboardEvent} event`
 - __Usage:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae reiciendis vel libero sequi ipsam dolor aliquam accusantium a minima recusandae dolore, ducimus blanditiis dolorem. Dolore quibusdam itaque earum laborum consequatur.
+    ```javascript
+      <template>
+        ...
+        <input type="text" v-model="input.price"
+            id="inputPrice"
+            @keypress="numericInputFilter(input.price, $event)">
+        ...
+      </template>
+```
 
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores voluptatem, maxime ratione reprehenderit consectetur adipisci minus recusandae quia asperiores, officiis eos natus voluptate corrupti quidem dolorem in animi. Quibusdam, maxime?
+    Filter the input to accept only numeric digits, decimal, and minus sign.
 
 
 ## Events
 #### # dataform:set-data
 - __Argument:__ `{Object} data`
 
+- __Type:__ Listening
 
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, eligendi. Dolorum suscipit maiores cum atque praesentium ex, corrupti libero repellendus magni commodi nam, doloribus saepe. Veniam dolor porro voluptas natus.
+    You can use this event to set the data to be used in the form.
 
 #### # dataform:clear-form
+- __Type:__ Listening
+
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, eligendi. Dolorum suscipit maiores cum atque praesentium ex, corrupti libero repellendus magni commodi nam, doloribus saepe. Veniam dolor porro voluptas natus.
+    Use this event to clear all the input value in the data form.
 
 #### # dataform:set-errors
 - __Argument:__ `{Array} errors`
 
+- __Type:__ Listening
+
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, eligendi. Dolorum suscipit maiores cum atque praesentium ex, corrupti libero repellendus magni commodi nam, doloribus saepe. Veniam dolor porro voluptas natus.
+    Use this event to send the validation errors to the data form component.
 
 #### # dataform:clear-errors
+- __Type:__ Listening
+
 - __Description:__
 
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ad, eligendi. Dolorum suscipit maiores cum atque praesentium ex, corrupti libero repellendus magni commodi nam, doloribus saepe. Veniam dolor porro voluptas natus.
+    Use this event to clear all the errors by setting `errors` object to `null`.
 
 
 ## Build Setup
