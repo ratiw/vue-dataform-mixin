@@ -52,9 +52,17 @@ export default {
       }
     },
     getEmptyInput: function () {
+      return this.getEmptyObject(this.keys)
+    },
+    getEmptyObject: function(keys) {
+      var self = this
       var obj = {}
-      this.keys.forEach(function(key) {
-        obj[key] = ''
+      keys.forEach(function(key) {
+        if (typeof(key) === 'object') {
+          obj[key.name] = self.getEmptyObject(key.value)
+        } else {
+          obj[key] = ''
+        }
       })
       return obj
     },
