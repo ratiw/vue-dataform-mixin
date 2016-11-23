@@ -1,6 +1,6 @@
 {
   "name": "vue-dataform-mixin",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Vue Mixin util to help create data entry component",
   "author": "Rati Wannapanop <rati.wannapanop@gmail.com>",
   "license": "MIT",
