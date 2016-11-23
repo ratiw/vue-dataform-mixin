@@ -35,6 +35,17 @@ $ npm install vue-dataform-mixin
 - __Usage:__
 
     Array of property names to be mapped to `input` object inside the data form.
+    ```
+    [ 'prop_a', 'prop_b', 'prop_c' ]
+    ```
+    
+    If the property has nested object, use the following format:
+    ```
+    [ 'prop_a', 'prop_b', { name: 'prop_c', value: ['prop_c_1', 'prop_c_2'] } ]
+    ```
+    
+    The nested object can also contain nested object as well.
+    
 
 #### # data
 - __Expect:__ `Object`
