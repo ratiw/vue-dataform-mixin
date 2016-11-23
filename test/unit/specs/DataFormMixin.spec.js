@@ -166,6 +166,18 @@ describe('DataFormMixin.vue', () => {
 
         expect(comp.getEmptyInput()).to.deep.equal({code: '', name: ''})
       })
+
+      it('should return an object with nested keys each with empty string value', () => {
+        const vm = new Vue({
+          template: '<dummy-form :keys="[\'code\', \'name\', { name: \'obj\', value: [\'aa\']}]"></dummy-form>',
+          components: {
+            DummyForm
+          }
+        }).$mount()
+        let comp = vm.$children[0]
+
+        expect(comp.getEmptyInput()).to.deep.equal({code: '', name: '', obj: {aa: ''}})
+      })
     })
 
     describe('#dispatchEvent()', () => {
