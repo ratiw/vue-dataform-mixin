@@ -38,14 +38,14 @@ $ npm install vue-dataform-mixin
     ```
     [ 'prop_a', 'prop_b', 'prop_c' ]
     ```
-    
+
     If the property has nested object, use the following format:
     ```
     [ 'prop_a', 'prop_b', { name: 'prop_c', value: ['prop_c_1', 'prop_c_2'] } ]
     ```
-    
+
     The nested object can also contain nested object as well.
-    
+
 
 #### # data
 - __Expect:__ `Object`
@@ -127,9 +127,12 @@ In order for the data form to work, you will need to correctly bind these method
 
     When triggered, it will do the following, in order:
     - Check if the data in the form has been modified (e.g. different from the original values). If not, the `dataform:no-changed` event will be dispatched and exit.
+    - Call the `beforeValidate` hook.
     - Call the validation callback (if defined). If the validation fails, then exit.
-    - Copy all the changes from `input` to `data`
-    - Dispatch the `dataform:stored` or `dataform:updated` event depending on the valid of `isNew`.
+    - Call the `afterValidate` hook.
+    - Copy all the changes from `input` to a new object to be passed during dispatching.
+    - Call the `transform` hook with the modified data.
+    - Dispatch the `dataform:stored` or `dataform:updated` event depending on the valid of `isNew` and passing the modified data.
 
 #### # onCancel
 - __Usage:__
@@ -169,6 +172,8 @@ In order for the data form to work, you will need to correctly bind these method
 - __Description:__
 
     This method will copy the values of the provided `keys` prop in the given `data` to the `input` object. It will also set the value of `isNew` property depending on the content of the given argument.
+
+    This method will call `beforeSetData` hook before it starts setting (copying) data to internal `input` variable and it will call `afterSetData` hook just before it exits the method. See Hooks section below.
 
     > __Note:__ This method is called when `dataform:set-data` event was received. You should use `dataform:set-data` event when possible.
 
@@ -218,6 +223,62 @@ In order for the data form to work, you will need to correctly bind these method
 
     Set all input inside data form to empty string `''`.
 
+## Hooks
+#### # beforeSetData
+- __Argument:__ `none`
+
+- __Description:__
+
+    This hook allows you to do something before `setData` begins to do anything
+
+- __Usage:__
+    You can define this method in your main component that uses this mixin.
+
+#### # afterSetData
+- __Argument:__ `none`
+
+- __Description:__
+
+    This hook allows you to do something after `setData` has been finished. For example, you may need to call a method to calculate some values right after the data has been set to `input` variable.
+
+- __Usage:__
+
+    You can define this method in your main component that uses this mixin.
+
+#### # beforeValidate
+- __Argument:__ `none`
+
+- __Description:__
+
+    This hook will be called before the validation callback is invoked.
+
+- __Usage:__
+
+    You can define this method in your main component that uses this mixin.
+
+#### # afterValidate
+- __Argument:__ `none`
+
+- __Description:__
+
+    This hook will be called right after the validation has been called
+
+- __Usage:__
+
+    You can define this method in your main component that uses this mixin.
+
+#### # transform
+- __Argument:__ `{Object}` data
+
+- __Description:__
+
+    This hook allows you to further transform the pass-in data before it is dispatching to the parent instance.
+
+- __Usage:__
+
+    You can define this method in your main component that uses this mixin.
+
+    > __Note:__ You must always return the data back to the caller
 
 ## Input keypress filtering
 #### # numericInputFilter
