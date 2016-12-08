@@ -1,6 +1,6 @@
 {
   "name": "vue-dataform-mixin",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Vue Mixin util to help create data entry component",
   "author": "Rati Wannapanop <rati.wannapanop@gmail.com>",
   "license": "MIT",
@@ -18,8 +18,8 @@
     "url": "https://github.com/ratiw/vue-dataform-mixin.git"
   },
   "dependencies": {
-    "vue": "^1.0.21",
-    "babel-runtime": "^6.0.0"
+    "babel-runtime": "^6.0.0",
+    "vue": "^1.0.21"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",

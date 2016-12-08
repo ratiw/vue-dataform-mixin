@@ -26,7 +26,7 @@ export default {
   data: function () {
     return {
       eventPrefix: 'dataform:',
-      input: null,
+      input: {},
       errors: null,
       isNew: false
     }
@@ -36,32 +36,54 @@ export default {
   },
   methods: {
     setData: function (data) {
-      this.isNew = data === null ? true : false
+      this.beforeSetData()
+      this.isNew = false
       // clear errors
       this.clearErrors()
-      // create empty object
-      this.data = data || this.getEmptyInput()
-      this.input = this.getEmptyInput()
-      if (data !== null) {
-        var self = this
-        this.keys.forEach(function(key) {
-          if (data[key] !== undefined) {
-            self.input[key] = data[key]
-          }
-        })
+
+      if (this.isEmptyObject(data)) {
+        this.isNew = true
+        // create empty input
+        this.data = this.getEmptyInput()
+        this.input = this.getEmptyInput()
+      } else {
+        // this.data = data
+        this.copyObject(this.input, data, this.keys)
+        this.copyObject(this.data, this.input, this.keys)
       }
+
+      this.afterSetData()
+    },
+    beforeSetData: function() {},
+    afterSetData: function() {},
+    isEmptyObject: function(obj) {
+      return obj === undefined || obj === null || Object.keys(obj).length === 0
+    },
+    copyObject: function(target, source, keys) {
+      var self = this
+      keys.forEach(function(key) {
+        if (typeof(key) === 'object') {
+          target[key.name] = {}
+          self.copyObject(target[key.name], source[key.name], key.value)
+        } else {
+          if (source[key]) {
+            target[key] = source[key]
+          }
+        }
+      })
     },
     getEmptyInput: function () {
       return this.getEmptyObject(this.keys)
     },
-    getEmptyObject: function(keys) {
+    getEmptyObject: function(keys, defaultValue) {
+      defaultValue = defaultValue === undefined ? '' : defaultValue
       var self = this
       var obj = {}
       keys.forEach(function(key) {
         if (typeof(key) === 'object') {
-          obj[key.name] = self.getEmptyObject(key.value)
+          obj[key.name] = self.getEmptyObject(key.value, defaultValue)
         } else {
-          obj[key] = ''
+          obj[key] = defaultValue
         }
       })
       return obj
@@ -76,16 +98,27 @@ export default {
         return
       }
 
+      this.beforeValidate()
+
       if (! this.validationPasses()) {
         return
       }
 
-      var self = this
-      this.keys.forEach(function(key) {
-        self.data[key] = self.input[key]
-      })
+      this.afterValidate()
+
+      var modifiedData = this.getEmptyInput()
+      this.copyObject(modifiedData, this.input, this.keys)
+
       var event = this.isNew ? 'stored' : 'updated'
-      this.dispatchEvent(event, this.data)
+
+      // allow data transformation before dispatching modified data
+      modifiedData = this.transform(modifiedData)
+      this.dispatchEvent(event, modifiedData)
+    },
+    beforeValidate: function() {},
+    afterValidate: function() {},
+    transform: function(data) {
+      return data
     },
     onCancel: function () {
       this.dispatchEvent('cancelled')
@@ -94,9 +127,9 @@ export default {
       this.dispatchEvent('request-delete', this.data)
     },
     validationPasses: function() {
-      return this.callCallback(this.validateCallback, [this.input, this.isNew])
+      return this.callValidationCallback(this.validateCallback, [this.input, this.isNew])
     },
-    callCallback: function (func, args) {
+    callValidationCallback: function (func, args) {
       if (func.trim() === "") return true
 
       args = args || []
@@ -114,15 +147,27 @@ export default {
       this.input = this.getEmptyInput()
     },
     isDirty: function () {
-      var dirty = false
+      return ! this.isEqual(this.data, this.input, this.keys)
+    },
+    isEqual: function(obj1, obj2, keys, deep) {
+      deep = deep === undefined ? true : deep
       var self = this
-      this.keys.forEach(function(key) {
-        if (self.data[key] !== self.input[key]) {
-          dirty = true
-          return
+      var result = true
+
+      keys.forEach(function(key) {
+        // if there is any false, don't bother continue
+        if (result === false) { return }
+
+        if (typeof(key) === 'object' && deep === true) {
+          result = self.isEqual(obj1[key.name], obj2[key.name], key.value)
+        } else {
+          if (obj1[key] !== obj2[key]) {
+            result = false
+          }
         }
       })
-      return dirty
+
+      return result
     },
     setErrors: function(errors) {
       if (typeof(errors) !== 'object') {
@@ -132,7 +177,7 @@ export default {
       this.errors = errors
     },
     hasError: function(name) {
-      name = name || null
+      name = name === undefined ? null : name
       if (this.errors === null) return false
       if (name === null && this.errors) return true
       if (this.errors[name] !== undefined) return true

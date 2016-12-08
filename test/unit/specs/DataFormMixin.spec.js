@@ -20,17 +20,18 @@ describe('DataFormMixin.vue', () => {
     })
 
     describe('#data prop', () => {
-      it('should return empty object when data prop was not given', () => {
+      it('data should return empty object with appropriate keys when data prop was not given', () => {
         const vm = new Vue({
           template: '<dummy-form :keys="keys"></dummy-form>',
           components: {
             DummyForm
           },
           data: {
-            keys: ['code', 'name']
+            keys: ['code', 'name'],
+            myData: {code: '', name: ''}
           }
         }).$mount()
-        expect(vm.$children[0].data).to.be.empty
+        expect(vm.$children[0].data).to.deep.equal(vm.myData)
       })
       it('should return the correct object when data prop is given', () => {
         const vm = new Vue({
@@ -137,6 +138,75 @@ describe('DataFormMixin.vue', () => {
         comp.setData(null)
         expect(comp.input).to.deep.equal({code: '', name: ''})
       })
+      it('should call beforeSetData and then afterSetData once', () => {
+        let spy1 = sinon.spy(comp, 'beforeSetData')
+        let spy2 = sinon.spy(comp, 'afterSetData')
+        comp.setData(null)
+        expect(comp.beforeSetData).to.be.calledOnce
+        expect(comp.afterSetData).to.be.calledOnce
+        expect(spy2).to.be.calledAfter(spy1)
+        comp.beforeSetData.restore()
+        comp.afterSetData.restore()
+      })
+    })
+
+    describe('#isEmptyObject()', () => {
+      const vm = new Vue({
+        template: '<dummy-form :keys="[\'code\', \'name\']" :data="myData"></dummy-form>',
+        components: {
+          DummyForm
+        },
+        data: {
+          myData: null
+        }
+      }).$mount()
+      let comp = vm.$children[0]
+
+      it('should return true when the given object is undefined', () => {
+        let aa
+        expect(comp.isEmptyObject(aa)).to.be.true
+      })
+      it('should return true when the given object is null', () => {
+        let aa = null
+        expect(comp.isEmptyObject(aa)).to.be.true
+      })
+      it('should return true when the given object is {}', () => {
+        let aa = {}
+        expect(comp.isEmptyObject(aa)).to.be.true
+      })
+      it('should return false otherwise', () => {
+        let aa = {code: 'foo'}
+        expect(comp.isEmptyObject(aa)).to.be.false
+      })
+    })
+
+    describe('#copyObject()', () => {
+      const vm = new Vue({
+        template: '<dummy-form :keys="[\'code\']" :data="myData"></dummy-form>',
+        components: {
+          DummyForm
+        },
+        data: {
+          myData: null
+        }
+      }).$mount()
+      let comp = vm.$children[0]
+
+      it('should copy normal object correctly', () => {
+        let keys = ['aa', 'bb']
+        let source = {aa: 11, bb: 22}
+        let target = {}
+        comp.copyObject(target, source, keys)
+        expect(target).to.deep.equal(source)
+      })
+
+      it('should copy nested object correctly', () => {
+        let keys = ['aa', 'bb', {name: 'dummy', value: ['dd', 'ee']}]
+        let source = {aa: 11, bb: 22, dummy: {dd: 33, ee: 44}}
+        let target = {}
+        comp.copyObject(target, source, keys)
+        expect(target).to.deep.equal(source)
+      })
     })
 
     describe('#clearErrors()', () => {
@@ -218,7 +288,35 @@ describe('DataFormMixin.vue', () => {
       })
     })
 
-    describe('#callCallback()', () => {
+    describe('#isEqual()', () => {
+      const vm = new Vue({
+        template: '<dummy-form :keys="[\'code\', \'name\']" :data="myData"></dummy-form>',
+        components: {
+          DummyForm
+        },
+        data: {
+          myData: {code: 'foo', name: 'bar'}
+        }
+      }).$mount()
+      let comp = vm.$children[0]
+      let obj1 = {aa: 11, bb: 22, cc: 33, dd: {ee: 44, ff: 55}, dummy: {foo: 'bar'}}
+      let obj2 = {aa: 11, bb: 22, dd: {ee: 44, ff: 55}, dummy: {foo: 'baz'}}
+
+      it('should return true when two shallow objects contains the same key-value pairs', () => {
+        expect(comp.isEqual(obj1, obj2, ['aa', 'bb'], false)).to.be.true
+      })
+      it('should return false when two shallow objects does not contains the same key-value pair', () => {
+        expect(comp.isEqual(obj1, obj2, ['aa', 'bb', 'cc'], false)).to.be.false
+      })
+      it('should return true when two objects contains the same nested key-value pairs', () => {
+        expect(comp.isEqual(obj1, obj2, ['aa', 'bb', {name: 'dd', value: ['ee', 'ff']}], true)).to.be.true
+      })
+      it('should return false when two objects does not contains the same nested key-value pairs', () => {
+        expect(comp.isEqual(obj1, obj2, ['aa', 'bb', {name: 'dd', value: ['ee', 'ff']}, {name: 'dummy', value: ['foo']}], true)).to.be.false
+      })
+    })
+
+    describe('#callValidationCallback()', () => {
       const vm = new Vue({
         template: '<dummy-form :keys="[\'code\', \'name\']" validate-callback="validate"></dummy-form>',
         components: {
@@ -233,16 +331,17 @@ describe('DataFormMixin.vue', () => {
       let comp = vm.$children[0]
 
       it('should return true when the first argument evaluates to empty string', () => {
-        expect(comp.callCallback('')).to.be.true
+        expect(comp.callValidationCallback('')).to.be.true
       })
       it('should return the result of the callback function when the callback is present', () => {
-        expect(comp.callCallback('validate', 'foo')).to.be.true
+        expect(comp.callValidationCallback('validate', 'foo')).to.be.true
       })
       it('should log error and return true when the given function does not exist', () => {
         sinon.spy(console, 'error')
-        let result = comp.callCallback('dummy')
+        let result = comp.callValidationCallback('dummy')
         expect(console.error).to.have.been.calledWith('Method "dummy" does not exist!')
         expect(result).to.be.true
+        console.error.restore()
       })
     })
 
@@ -286,7 +385,7 @@ describe('DataFormMixin.vue', () => {
         comp.isNew = true
         comp.input.name = 'baz'
         comp.onSave()
-        expect(comp.dispatchEvent).to.have.been.calledWith('stored', comp.data)
+        expect(comp.dispatchEvent).to.have.been.calledWith('stored', {code: 'foo', name: 'baz'})
         comp.dispatchEvent.restore()
       })
       it('should dispatchEvent "updated" when data have been modified and isNew prop is false', () => {
@@ -294,7 +393,7 @@ describe('DataFormMixin.vue', () => {
         comp.isNew = false
         comp.input.name = 'hello'
         comp.onSave()
-        expect(comp.dispatchEvent).to.have.been.calledWith('updated', comp.data)
+        expect(comp.dispatchEvent).to.have.been.calledWith('updated', {code: 'foo', name: 'hello'})
         comp.dispatchEvent.restore()
       })
       it('should just return when validate-callback returned false', () => {
