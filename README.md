@@ -295,7 +295,7 @@ In order for the data form to work, you will need to correctly bind these method
             @keypress="numericInputFilter(input.price, $event)">
         ...
       </template>
-```
+    ```
 
 - __Description:__
 
